@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluentd-elasticsearch
+  namespace: kube-system
+  labels:
+    k8s-app: fluentd-logging
+spec:
+  selector:
+    matchLabels:
+      name: fluentd-elasticsearch
+  updateStrategy:
+    type: RollingUpdate  # 수정하면 바로 적용됨 (RollingUpdate)
+    # type: OnDelete
+    # 데몬세트로 실행한 파드를 직접 지워야 해당 노드에 새로운 템플릿 버전의 파드가 실행됨
+  template:
+    metadata:
+      labels:
+        name: fluentd-elasticsearch
+    spec:
+      containers:
+      - name: fluentd-elasticsearch
+        image: fluent/fluentd-kubernetes-daemonset:elasticsearch
+        env:
+        - name: testenv
+          value: value01
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
