@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websample
+spec:
+  selector:
+    matchLabels:
+      run: websample
+  strategy:
+    rollingUpdate:
+      maxSurge: 25% # 기본 파드 개수의 25% 만큼 더 추가 가능
+      maxUnavailable: 25% # 업데이트하는 동안 기본 파드 개수의 25%만큼의 파드를 이용할 수 없다
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: websample
+    spec:
+      containers:
+        - image: acadx0/190713:v1
+          imagePullPolicy: Always
+          name: websample
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /liveness # 해당 경로 5000번 포트에 GET 요청으로 컨테이너 상태 진단
+              port: 5000
+          readinessProbe:
+            httpGet:
+              path: /readiness # 해당 경로 5000번 포트에 GET 요청으로 컨테이너 상태 진단
+              port: 5000
+          lifecycle:
+            preStop:
+              httpGet:
+                path: /prestop
+                port: 5000
+      terminationGracePeriodSeconds: 30 # 30초 동안 그레이스풀 종료가 되지 않으면 강제로 SIGKILL 신호로 파드 종료
